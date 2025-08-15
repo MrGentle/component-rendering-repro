@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { loadModule } from '$lib/component-loader.js';
+	import { load } from '$lib/component-loader.js';
 
     let { data } = $props();
     let divRef: HTMLElement;
@@ -8,7 +8,38 @@
     const svelteVersion = data.svelteVersion;
 
     onMount(async () => {
-        const module = await loadModule(data.js); 
+        const code = data.js.split("\n");
+        code.unshift(`import { mount, unmount } from "svelte";`);
+
+        const exportIndex = code.findIndex(line => line.startsWith("export default"));
+        code[exportIndex] = code[exportIndex].replace("export default ", "");
+
+        code.push(`
+            var factory = (target, props) => {
+                const component = mount(Template, {
+                    target,
+                    props
+                });
+                return {
+                    component,
+                    name: "Template",
+                    props,
+                    destroy: () => {
+                        console.log("entry.ts -> simple.svelte", "destroying component", component);
+                        unmount(component);
+                    }
+                };
+            };
+
+            export {
+                factory as default
+            };
+        `)
+
+        const newCode = code.join("\n");
+
+        console.log(newCode); 
+        const module = await load(newCode);
         module(divRef, {name: "World"});
     })
 </script>
