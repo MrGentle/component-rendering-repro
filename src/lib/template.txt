@@ -1,0 +1,14 @@
+<script>
+	const { name } = $props();
+	console.log(name);
+</script>
+
+<div class="red">
+	<h1>Hello {name}!</h1>
+</div>
+
+<style>
+	.red {
+		color: red;
+	}
+</style>
