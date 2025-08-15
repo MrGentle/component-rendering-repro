@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { load } from '$lib/component-loader.js';
+	import { loadModule } from '$lib/component-loader.js';
 
     let { data } = $props();
     let divRef: HTMLElement;
@@ -8,7 +8,7 @@
     const svelteVersion = data.svelteVersion;
 
     onMount(async () => {
-        const module = await load(data.js); 
+        const module = await loadModule(data.js); 
         module(divRef, {name: "World"});
     })
 </script>

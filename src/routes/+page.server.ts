@@ -2,8 +2,6 @@ import { compile } from 'svelte/compiler';
 import template from '$lib/template.txt?raw';
 import lock from "../../package-lock.json";
 
-
-
 export const load = async () => {
     const preview = compile(template, {
         filename: "Template.svelte",
