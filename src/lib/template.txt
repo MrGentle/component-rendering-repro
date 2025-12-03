@@ -1,14 +1,18 @@
 <script>
 	const { name } = $props();
-	console.log(name);
+	console.log("Hello", name);
 </script>
 
-<div class="red">
-	<h1>Hello {name}!</h1>
+<div class="component">
+	<h2 class="title">Hello {name} from inside component!</h2>
 </div>
 
 <style>
-	.red {
-		color: red;
+    .component {
+        display: flex;
+        justify-content: center;
+    }
+	.title {
+		color: #333333;
 	}
 </style>

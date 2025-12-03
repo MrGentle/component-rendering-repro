@@ -1,18 +1,12 @@
-import { compile } from 'svelte/compiler';
 import template from '$lib/template.txt?raw';
 import lock from "../../package-lock.json";
+import { compileModule } from "../lib/component-factory"
 
-export const load = async () => {
-    const preview = compile(template, {
-        filename: "Template.svelte",
-        css: "injected"
-    });
 
-    const returnData = {
-        svelteVersion: lock.packages['node_modules/svelte'].version,
-        js: preview.js.code,
-        css: preview.css?.code
-    }
+export const load = async () => {    
+    const code = await compileModule(template, lock.packages['node_modules/svelte'].version);
 
-    return returnData;
+    return {
+        code
+    };
 }
