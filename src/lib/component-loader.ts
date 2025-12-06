@@ -1,7 +1,8 @@
-const load = async (code: string) => {
+const load = async (code: string, ref: HTMLElement, props?: object) => {
     const url = URL.createObjectURL(new Blob([code], { type: "application/javascript" }));
     const module = await import(/* @vite-ignore */ url);
-    return module.default;
+    return await module.default(ref, props);
+
 }
 
 export {

@@ -1,37 +1,46 @@
 import { compile } from "svelte/compiler";
 import * as esbuild from "esbuild";
-import { virtualSveltePlugin } from "./wrapper-esbuild-plugin";
+import { dynamicComponentBodyPlugin } from "./dynamic-component-body-plugin";
+import { randomUUID } from "node:crypto";
+import { dynamicComponentWrapperPlugin } from "./dynamic-component-wrapper-plugin";
+import { componentWrapper } from "./component-wrapper";
 
 interface ComponentBuildOptions {
-    
+    moduleIdentifier?: string,
+    minify?: boolean,
+    treeShaking?: boolean,
+    customWrapper?: string
 }
 
+export const compileModule = async (code: string, svelteVersion: string, buildOptions: ComponentBuildOptions = { minify: false, treeShaking: true }) => {
+    let id = randomUUID();
 
-export const compileModule = async (code: string, svelteVersion: string, buildOptions: {} = {}, wrapperPath: string = "./src/lib/component-wrapper.ts") => {
-    const compiledCode = compile(code, {
-        filename: "Template.svelte",    
+    const clientCompiledCode = compile(code, {
+        filename: buildOptions.moduleIdentifier ? `${buildOptions.moduleIdentifier}.svelte` : `Template_${id}.svelte`,    
         css: "injected"
     });
 
-    const buildRes = await esbuild.build({
-        entryPoints: [wrapperPath],
+    const clientBuildRes = await esbuild.build({  
+        entryPoints: ["virtual:wrapper"],
         bundle: true,
-        outfile: 'component.ts',
+        outfile: buildOptions.moduleIdentifier ? `${buildOptions.moduleIdentifier}.ts` : `component_${id}.ts`,
         platform: "browser",
         target: "esnext",
         format: "esm",
-        minify: false,
+        minify: buildOptions.minify,
         write: false,
         banner: {
             js: "//Wrapped dynamic component with esbuild"
         },
         
-        treeShaking: true,
+        treeShaking: buildOptions.treeShaking,
         
         external: ["svelte"],
-        plugins: [virtualSveltePlugin(compiledCode.js.code, svelteVersion)]
+        plugins: [dynamicComponentWrapperPlugin(componentWrapper), dynamicComponentBodyPlugin(clientCompiledCode.js.code, svelteVersion)]
     });
     
 
-    return buildRes.outputFiles ? buildRes.outputFiles[0].text : "";
+    return {
+        client: clientBuildRes.outputFiles ? clientBuildRes.outputFiles[0].text : "",
+    };
 }

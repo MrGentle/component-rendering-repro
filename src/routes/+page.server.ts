@@ -4,9 +4,9 @@ import { compileModule } from "../lib/component-factory"
 
 
 export const load = async () => {    
-    const code = await compileModule(template, lock.packages['node_modules/svelte'].version);
+    const { client } = await compileModule(template, lock.packages['node_modules/svelte'].version);
 
     return {
-        code
+        clientModule: client
     };
 }
